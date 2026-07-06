@@ -1,0 +1,32 @@
+artifacts = ["/app/report.json"]
+
+[task]
+name = "dynamo/log-report"
+description = "Parse an Apache-style access log into a small JSON summary report."
+
+[metadata]
+category = "data_processing_and_etl"
+subcategory = "text_processing"
+task_objective = ["transform", "generate"]
+artifact_type = ["text_or_log_file", "generated_output_artifact"]
+expert_time_estimate_hours = 0.3
+model_tested = "GPT-5.4"
+agent_tested = "Terminus-2"
+difficulty_explanation = "Requires correctly parsing Apache combined-log-style lines with a regex over the quoted request field, distinguishing the HTTP method from the path, and aggregating three separate statistics (line count, distinct-IP count, and a most-common-path mode) without an off-the-shelf library call."
+solution_explanation = "Stream the log line by line, incrementing a total counter, adding the first whitespace-delimited field to a set of IPs, and extracting the request path via a regex on the quoted request segment into a Counter; report the total, the set size, and the most common path."
+verification_explanation = "The verifier independently re-parses /app/access.log at test time using its own logic (not by importing or calling the solution) and asserts the agent's report.json matches on total_requests, unique_ips, and top_path exactly, in addition to checking the file exists and is valid JSON with the required schema."
+
+[verifier]
+timeout_sec = 120.0
+
+[agent]
+timeout_sec = 120.0
+
+[environment]
+build_timeout_sec = 600.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
